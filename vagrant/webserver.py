@@ -18,7 +18,6 @@ class WebServerHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-
                 output = ""
                 output += "<html><body>"
                 output += "Hello!"
@@ -27,11 +26,11 @@ class WebServerHandler(BaseHTTPRequestHandler):
                 self.wfile.write(output)
                 print output
                 return
+
             if self.path.endswith("/hola"):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-
                 output = ""
                 output += "<html><body>"
                 output += "&#161Hola <a href = '/hello'>Back to Hello</a>"
@@ -45,12 +44,9 @@ class WebServerHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-
-
                 output = ""
                 output += "<html><body>"
                 for restaurant in restaurants:
-                    #print item.name
                     output += restaurant.name
                     output += "</br>"
                     output += "<a href = '#'>Edit</a>"
@@ -62,6 +58,19 @@ class WebServerHandler(BaseHTTPRequestHandler):
                 self.wfile.write(output)
                 print output
                 return
+
+            if self.path.endswith("/restaurants/new"):
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                output = ""
+                output += "<html><body>"
+                output += "<form method='POST' enctype='multipart/form-data' action='/restaurants'><h2>Restaurant name</h2><input name='message' type='text'><input type='submit' value='Submit'></form>"
+                output += "</body></html>"
+                self.wfile.write(output)
+                print output
+                return
+
         except IOError:
             self.send_error(404, "File Not Found %s" % self.path)
 
@@ -75,13 +84,14 @@ class WebServerHandler(BaseHTTPRequestHandler):
                 fields = cgi.parse_multipart(self.rfile, pdict)
                 messagecontent = fields.get('message')
 
+            newRestaurant = Restaurant(name = messagecontent[0])
+            session.add(newRestaurant)
+            session.commit()
 
             output = ""
             output += "<html><body>"
-            output += "<h2> Okay, how about this: </h2>"
+            output += "<h2>New restaurant has been added</h2>"
             output += "<h1> %s </h1>" % messagecontent[0]
-
-            output += "<form method='POST' enctype='multipart/form-data' action='/hello'><h2>What would you like to say?</h2><input name='message' type='text'><input type='submit' value='Submit'></form>"
             output += "</body></html>"
             self.wfile.write(output)
             print output
